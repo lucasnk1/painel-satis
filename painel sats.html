@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de Satisfação - CION</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .question {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+            color: #555;
+        }
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Avaliação de Satisfação - CION</h1>
+    <p>Queremos ouvir você! Por favor, responda as perguntas abaixo para nos ajudar a melhorar nossos serviços.</p>
+
+    <form id="feedbackForm">
+        <div class="question">
+            <label>1. Atendimento</label>
+            <label><input type="radio" name="atendimento" value="excelente" required> Excelente</label>
+            <label><input type="radio" name="atendimento" value="bom"> Bom</label>
+            <label><input type="radio" name="atendimento" value="regular"> Regular</label>
+            <label><input type="radio" name="atendimento" value="ruim"> Ruim</label>
+        </div>
+
+        <div class="question">
+            <label>2. Estrutura</label>
+            <label><input type="radio" name="estrutura" value="excelente" required> Excelente</label>
+            <label><input type="radio" name="estrutura" value="bom"> Bom</label>
+            <label><input type="radio" name="estrutura" value="regular"> Regular</label>
+            <label><input type="radio" name="estrutura" value="ruim"> Ruim</label>
+        </div>
+
+        <div class="question">
+            <label>3. Tempo de Espera</label>
+            <label><input type="radio" name="tempo_espera" value="rapido" required> Sim, foi rápido.</label>
+            <label><input type="radio" name="tempo_espera" value="curto"> Poderia ser mais curto.</label>
+            <label><input type="radio" name="tempo_espera" value="demorou"> Demorou mais do que o esperado.</label>
+        </div>
+
+        <div class="question">
+            <label>4. Atendimento Médico</label>
+            <label><input type="radio" name="atendimento_medico" value="muito_satisfeito" required> Muito satisfeito(a)</label>
+            <label><input type="radio" name="atendimento_medico" value="satisfeito"> Satisfeito(a)</label>
+            <label><input type="radio" name="atendimento_medico" value="insatisfeito"> Insatisfeito(a)</label>
+        </div>
+
+        <div class="question">
+            <label>5. Sugestões</label>
+            <textarea name="sugestoes" placeholder="O que podemos melhorar?" required></textarea>
+        </div>
+
+        <button type="button" onclick="saveFeedback()">Enviar Avaliação</button>
+    </form>
+    <button type="button" onclick="exportToExcel()" style="margin-top: 10px;">Exportar para Excel</button>
+</div>
+
+<script>
+    const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
+
+    function saveFeedback() {
+        const form = document.getElementById('feedbackForm');
+        const formData = new FormData(form);
+        const feedback = {};
+
+        for (const [key, value] of formData.entries()) {
+            feedback[key] = value;
+        }
+
+        feedbacks.push(feedback);
+        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+
+        alert('Avaliação salva com sucesso!');
+        form.reset();
+    }
+
+    function exportToExcel() {
+        if (feedbacks.length === 0) {
+            alert('Não há avaliações para exportar.');
+            return;
+        }
+
+        const headers = [
+            "Nº",
+            "Atendimento",
+            "Estrutura",
+            "Tempo de Espera",
+            "Atendimento Médico",
+            "Sugestões"
+        ];
+
+        const rows = feedbacks.map((feedback, index) => [
+            index + 1,
+            feedback.atendimento || "",
+            feedback.estrutura || "",
+            feedback.tempo_espera || "",
+            feedback.atendimento_medico || "",
+            feedback.sugestoes || ""
+        ]);
+
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Avaliações');
+
+        XLSX.writeFile(workbook, 'avaliacoes.xlsx');
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+</body>
+</html>
