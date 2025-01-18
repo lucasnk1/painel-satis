@@ -102,12 +102,9 @@
 
         <button type="button" onclick="saveFeedback()">Enviar Avaliação</button>
     </form>
-    <button type="button" onclick="exportToExcel()" style="margin-top: 10px;">Exportar para Excel</button>
 </div>
 
 <script>
-    const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
-
     function saveFeedback() {
         const form = document.getElementById('feedbackForm');
         const formData = new FormData(form);
@@ -117,46 +114,23 @@
             feedback[key] = value;
         }
 
-        feedbacks.push(feedback);
-        localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+        // Adiciona a data atual
+        feedback.date = new Date().toLocaleString('pt-BR');
 
-        alert('Avaliação salva com sucesso!');
-        form.reset();
-    }
-
-    function exportToExcel() {
-        if (feedbacks.length === 0) {
-            alert('Não há avaliações para exportar.');
-            return;
-        }
-
-        const headers = [
-            "Nº",
-            "Atendimento",
-            "Estrutura",
-            "Tempo de Espera",
-            "Atendimento Médico",
-            "Sugestões"
-        ];
-
-        const rows = feedbacks.map((feedback, index) => [
-            index + 1,
-            feedback.atendimento || "",
-            feedback.estrutura || "",
-            feedback.tempo_espera || "",
-            feedback.atendimento_medico || "",
-            feedback.sugestoes || ""
-        ]);
-
-        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Avaliações');
-
-        XLSX.writeFile(workbook, 'avaliacoes.xlsx');
+        // Enviar para o servidor
+        fetch('http://localhost:3000/sendFeedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(feedback),
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                form.reset();
+            })
+            .catch(error => alert('Erro ao salvar avaliação: ' + error));
     }
 </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 </body>
 </html>
